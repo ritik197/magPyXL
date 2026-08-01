@@ -1,0 +1,53 @@
+[build-system]
+requires = ["maturin>=1.4,<2.0"]
+build-backend = "maturin"
+
+[project]
+name = "magpyxl"
+version = "0.1.1"
+description = "High-performance data analysis library for Python with a Rust core. Supports Excel-style lookups, conditional aggregations, and vectorized operations on lists, NumPy, pandas, and Polars."
+readme = "README.md"
+requires-python = ">=3.8"
+license = "MIT"
+authors = [
+    { name = "Ritik Meena" }
+]
+
+keywords = [
+    "excel",
+    "pandas",
+    "polars",
+    "numpy",
+    "rust",
+    "xlookup",
+    "vlookup",
+    "sumifs",
+    "countifs",
+    "data-analysis"
+]
+
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Programming Language :: Rust",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+
+[project.urls]
+Homepage = "https://github.com/ritik197/magPyXL"
+Repository = "https://github.com/ritik197/magPyXL"
+Issues = "https://github.com/ritik197/magPyXL/issues"
+
+[tool.maturin]
+python-source = "python"
+module-name = "magpyxl._core"
