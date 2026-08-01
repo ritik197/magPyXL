@@ -1,127 +1,101 @@
-# MagpieXL
+![PyPI](https://img.shields.io/pypi/v/magpyxl)
+![Python](https://img.shields.io/pypi/pyversions/magpyxl)
+![License](https://img.shields.io/github/license/ritik197/magPyXL)
+![Downloads](https://img.shields.io/pypi/dm/magpyxl)
 
-Excel-style formulas — `SUM`, `AVERAGE`, `COUNT`, `COUNTIF`, `SUMIF`, `AVERAGEIF`,
-`COUNTIFS`, `SUMIFS`, `VLOOKUP`, `XLOOKUP` — backed by a compiled Rust core,
-callable with the exact same syntax whether your data is a plain Python list,
-a pandas DataFrame, a polars DataFrame, or a `.csv`/`.xlsx` file on disk.
+# MagpyXL
 
-## Design philosophy (current phase)
+Spreadsheet-inspired formulas for Python, powered by Rust.
 
-This release prioritizes **correctness, Excel-compatibility, and a clean,
-maintainable architecture** over raw performance. Every function is a single,
-straightforward implementation — normalize input → call the Rust core →
-return. No dual fast/slow code paths yet.
+## Why MagpyXL?
 
-Performance optimization (zero-copy numeric fast paths, SIMD, etc.) is a
-planned **later phase**, once every function's behavior has been tested and
-confirmed correct. It's fine if this version isn't the fastest possible — it
-is the most correct and easiest to reason about.
+MagpyXL brings familiar spreadsheet-style functions to Python with a consistent API and a high-performance Rust backend.
+
+Use them across Python lists, NumPy arrays, pandas, polars, CSV files, and Excel files without changing your code. Whether you're building reports, performing data analysis, or automating spreadsheets, MagpyXL provides an intuitive, Spreadsheet-inspired experience for Python developers.
 
 ## Install
 
 ```bash
-pip install magpiexl-0.1.0-cp312-cp312-manylinux_2_34_x86_64.whl
+pip install magpyxl
 ```
+## Supported Inputs
 
-(Only Python 3.12 on manylinux x86_64 is built in this package. To build for
-another Python version/platform, install Rust + `pip install maturin`, then
-run `maturin build --release` from the project root.)
+MagpyXL works with:
 
-## Quick start
+- Python lists and tuples
+- NumPy arrays
+- pandas Series and DataFrames
+- polars Series and DataFrames
+- CSV files
+- Excel (.xlsx) files
 
-```python
-import magpiexl as mx
+The same formula syntax works across all supported data sources.
 
-sales  = [1200, 800, 1500, 300, 950]
-region = ["East", "West", "East", "South", "East"]
+---
 
-mx.SUM(sales)                              # 4750
-mx.AVERAGE(sales)                          # 950.0
-mx.COUNTIF(region, "East")                 # 3
-mx.SUMIF(region, "East", sales)            # 3650
-mx.SUMIFS(sales, region, "East", sales, ">900")   # AND across pairs
-mx.VLOOKUP("Bob", [("Alice", 50000), ("Bob", 60000)], 2)   # 60000
-mx.XLOOKUP("Carol", ["Alice", "Bob", "Carol"], [50000, 60000, 70000])  # 70000
-```
+## Features
 
-### Works the same way with pandas
+- Spreadsheet-inspired formula syntax
+- Rust-powered execution
+- Automatic vectorized operations
+- Wildcard support (`*`, `?`)
+- Spreadsheet-compatible criteria (`>`, `<`, `>=`, `<=`, `<>`)
+- Case-insensitive text matching
+- Supports scalar and vectorized lookups
+- Works with pandas, polars, NumPy, CSV, and Excel
 
-```python
-import pandas as pd
-df = pd.DataFrame({"Name": [...], "Dept": [...], "Salary": [...]})
+---
 
-mx.SUM(df["Salary"])
-mx.AVERAGEIF(df["Dept"], "Sales", df["Salary"])
-mx.VLOOKUP("Carol", df, "Salary")          # col_index can be a column name
+## Current Features
 
-# Vectorized: pass a whole column as lookup_value -> get a matching
-# pandas Series back (same type in, same type out) -> chains right
-# back into pandas code.
-df["Price"] = mx.VLOOKUP(df["Key"], other_df, "Price", if_not_found=0)
+### Aggregate Functions
+- SUM
+- AVERAGE
+- COUNT
 
-# Or stay in pandas method-chaining style:
-df.mx.SUM("Salary")
-df.mx.SUMIFS("Salary", "Dept", "Eng")
-```
+### Conditional Functions
+- COUNTIF
+- SUMIF
+- AVERAGEIF
+- COUNTIFS
+- SUMIFS
 
-### Works the same way with polars
+### Lookup Functions
+- VLOOKUP
+- XLOOKUP
+- LOOKUPIFS
 
-```python
-import polars as pl
-pdf = pl.DataFrame({...})
-mx.SUM(pdf["Salary"])
-mx.VLOOKUP(pdf["Key"], other_pdf, "Price")   # returns a polars Series
-pdf.mx.COUNTIF("Dept", "Eng")
-```
+### Performance Features
+- Rust-powered execution
+- Automatic vectorized operations
+- Batch lookup optimization
+- Batch COUNTIF/SUMIF/COUNTIFS/SUMIFS evaluation
+- Wildcard support (`*`, `?`)
+- Spreadsheet-compatible comparison operators (`>`, `<`, `>=`, `<=`, `<>`)
+- Case-insensitive text matching
 
-### Standalone — no pandas/polars needed
+### Supported Data Sources
+- Python lists & tuples
+- NumPy arrays
+- pandas Series & DataFrames
+- polars Series & DataFrames
+- CSV files
+- Excel (.xlsx) files
 
-```python
-tbl = mx.read_table("sales.csv")     # or sales.xlsx
-mx.SUM(tbl["Revenue"])
-mx.VLOOKUP("Dave", "sales.csv", "Salary")   # path works directly too
-```
+### Platform Support
+- Python 3.8+
+- Windows
+- Linux
+- macOS
 
-## Function reference
+## Contributing
 
-| Function | Signature | Notes |
-|---|---|---|
-| `SUM` | `SUM(range)` | Ignores text/blank cells |
-| `AVERAGE` | `AVERAGE(range)` | Same |
-| `COUNT` | `COUNT(range)` | Counts numeric cells only (Excel semantics) |
-| `COUNTIF` | `COUNTIF(range, criteria)` | Criteria: `10`, `">10"`, `"<=5"`, `"<>0"`, `"ab*"`, `"a?c"` |
-| `SUMIF` | `SUMIF(range, criteria, sum_range=None)` | |
-| `AVERAGEIF` | `AVERAGEIF(range, criteria, average_range=None)` | |
-| `COUNTIFS` | `COUNTIFS(range1, criteria1, range2, criteria2, ...)` | AND across all pairs |
-| `SUMIFS` | `SUMIFS(sum_range, range1, criteria1, ...)` | AND across all pairs |
-| `VLOOKUP` | `VLOOKUP(lookup_value, table, col_index, range_lookup=False, if_not_found=None)` | `col_index`: 1-based number or column name; `lookup_value` can be scalar or a whole column |
-| `XLOOKUP` | `XLOOKUP(lookup_value, lookup_array, return_array, if_not_found=None)` | Same scalar-or-column behavior |
+Contributions, feature requests, and bug reports are welcome.
 
-`table` (for VLOOKUP) accepts: pandas DataFrame, polars DataFrame, a
-`magpiexl.Table`, a list of dicts, a list of lists, or a path to a
-`.csv`/`.xlsx` file.
+If you find a bug or have an idea for a new Spreadsheet function, please open an Issue or Pull Request.
 
-## Criteria syntax
+---
 
-Same as Excel: a bare number or string means equality; prefix with
-`>`, `<`, `>=`, `<=`, `<>` for comparisons; use `*` (any run of characters)
-or `?` (exactly one character) for text wildcards. Text matching is
-case-insensitive, same as Excel.
+## License
 
-## Project layout
-
-```
-magpiexl/
-├── Cargo.toml              # Rust crate config
-├── pyproject.toml          # maturin build config (mixed python/rust layout)
-├── src/lib.rs               # Rust core: value model, criteria parsing, all 10 functions
-└── python/magpiexl/
-    └── __init__.py          # Python adapter: input normalization, public API, .mx accessor
-```
-
-## What's next (later phase, not yet started)
-
-Once every function above is tested and confirmed correct in real use:
-- Zero-copy numeric fast paths for array-backed data (numpy/pandas/polars)
-- Benchmarking against pandas on realistic workloads
-- Expanding the criteria/lookup edge cases (multi-column VLOOKUP keys, etc.)
+This project is licensed under the MIT License.
