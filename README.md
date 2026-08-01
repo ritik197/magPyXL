@@ -1,7 +1,7 @@
 ![PyPI](https://img.shields.io/pypi/v/magpyxl)
-![Python](https://img.shields.io/pypi/pyversions/magpyxl)
+
 ![License](https://img.shields.io/github/license/ritik197/magPyXL)
-![Downloads](https://img.shields.io/pypi/dm/magpyxl)
+
 
 # MagpyXL
 
