@@ -4,13 +4,42 @@ build-backend = "maturin"
 
 [project]
 name = "magpyxl"
-version = "0.2.0"
-description = "Excel-style formulas (VLOOKUP, XLOOKUP, SUMIFS, COUNTIFS...) with a Rust core, callable from plain lists, pandas, or polars."
+version = "0.2.1"
+description = "Excel-style formulas (VLOOKUP, XLOOKUP, SUMIFS, COUNTIFS...) powered by Rust."
+readme = "README.md"
 requires-python = ">=3.8"
-classifiers = [
-    "Programming Language :: Rust",
-    "Programming Language :: Python :: Implementation :: CPython",
+license = { text = "MIT" }
+
+authors = [
+    { name = "Ritik Meena" }
 ]
+
+keywords = [
+    "excel",
+    "spreadsheet",
+    "rust",
+    "pandas",
+    "polars",
+    "xlookup",
+    "vlookup",
+    "sumifs"
+]
+
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Programming Language :: Rust",
+    "Operating System :: OS Independent",
+]
+
+[project.urls]
+Homepage = "https://github.com/ritik197/magPyXL"
+Repository = "https://github.com/ritik197/magPyXL"
+Issues = "https://github.com/ritik197/magPyXL/issues"
 
 [tool.maturin]
 python-source = "python"
