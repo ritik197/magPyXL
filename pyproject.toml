@@ -1,0 +1,17 @@
+[build-system]
+requires = ["maturin>=1.4,<2.0"]
+build-backend = "maturin"
+
+[project]
+name = "magpyxl"
+version = "0.2.0"
+description = "Excel-style formulas (VLOOKUP, XLOOKUP, SUMIFS, COUNTIFS...) with a Rust core, callable from plain lists, pandas, or polars."
+requires-python = ">=3.8"
+classifiers = [
+    "Programming Language :: Rust",
+    "Programming Language :: Python :: Implementation :: CPython",
+]
+
+[tool.maturin]
+python-source = "python"
+module-name = "magpyxl._core"
