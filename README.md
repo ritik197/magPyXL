@@ -1,36 +1,34 @@
-# MagpieXL
+# magpyxl
 
-Excel-style formulas — `SUM`, `AVERAGE`, `COUNT`, `COUNTIF`, `SUMIF`, `AVERAGEIF`,
-`COUNTIFS`, `SUMIFS`, `VLOOKUP`, `XLOOKUP` — backed by a compiled Rust core,
+Spreadsheet-style formulas — `SUM`, `AVERAGE`, `COUNT`, `COUNTIF`, `SUMIF`, `AVERAGEIF`,
+`COUNTIFS`, `SUMIFS`, `VLOOKUP`, `XLOOKUP`, `LOOKUPIFS` — backed by a compiled Rust core,
 callable with the exact same syntax whether your data is a plain Python list,
 a pandas DataFrame, a polars DataFrame, or a `.csv`/`.xlsx` file on disk.
 
-## Design philosophy (current phase)
-
-This release prioritizes **correctness, Excel-compatibility, and a clean,
-maintainable architecture** over raw performance. Every function is a single,
-straightforward implementation — normalize input → call the Rust core →
-return. No dual fast/slow code paths yet.
-
-Performance optimization (zero-copy numeric fast paths, SIMD, etc.) is a
-planned **later phase**, once every function's behavior has been tested and
-confirmed correct. It's fine if this version isn't the fastest possible — it
-is the most correct and easiest to reason about.
 
 ## Install
 
 ```bash
-pip install magpiexl-0.1.0-cp312-cp312-manylinux_2_34_x86_64.whl
+pip install magpyxl
 ```
 
-(Only Python 3.12 on manylinux x86_64 is built in this package. To build for
-another Python version/platform, install Rust + `pip install maturin`, then
-run `maturin build --release` from the project root.)
+## Why magpyxl
+magpyxl brings familiar Excel/Spreadsheet functions to Python with a consistent API, allowing the same function to work across multiple data sources.
+
+## Features
+
+- 🚀 Rust-powered computation
+- 📊 Excel/Spreadsheet-compatible formulas
+- 🐼 Native pandas support
+- ⚡ Native Polars support
+- 📄 CSV and Excel file support
+- 🔄 Consistent API across data sources
+- 🐍 Python 3.8+
 
 ## Quick start
 
 ```python
-import magpiexl as mx
+import magpyxl as mx
 
 sales  = [1200, 800, 1500, 300, 950]
 region = ["East", "West", "East", "South", "East"]
@@ -59,9 +57,6 @@ mx.VLOOKUP("Carol", df, "Salary")          # col_index can be a column name
 # back into pandas code.
 df["Price"] = mx.VLOOKUP(df["Key"], other_df, "Price", if_not_found=0)
 
-# Or stay in pandas method-chaining style:
-df.mx.SUM("Salary")
-df.mx.SUMIFS("Salary", "Dept", "Eng")
 ```
 
 ### Works the same way with polars
@@ -71,13 +66,12 @@ import polars as pl
 pdf = pl.DataFrame({...})
 mx.SUM(pdf["Salary"])
 mx.VLOOKUP(pdf["Key"], other_pdf, "Price")   # returns a polars Series
-pdf.mx.COUNTIF("Dept", "Eng")
+mx.COUNTIF("Dept", "Eng")
 ```
 
 ### Standalone — no pandas/polars needed
 
-```python
-tbl = mx.read_table("sales.csv")     # or sales.xlsx
+```python 
 mx.SUM(tbl["Revenue"])
 mx.VLOOKUP("Dave", "sales.csv", "Salary")   # path works directly too
 ```
@@ -88,7 +82,7 @@ mx.VLOOKUP("Dave", "sales.csv", "Salary")   # path works directly too
 |---|---|---|
 | `SUM` | `SUM(range)` | Ignores text/blank cells |
 | `AVERAGE` | `AVERAGE(range)` | Same |
-| `COUNT` | `COUNT(range)` | Counts numeric cells only (Excel semantics) |
+| `COUNT` | `COUNT(range)` | Counts numeric cells only (Spreadsheet semantics) |
 | `COUNTIF` | `COUNTIF(range, criteria)` | Criteria: `10`, `">10"`, `"<=5"`, `"<>0"`, `"ab*"`, `"a?c"` |
 | `SUMIF` | `SUMIF(range, criteria, sum_range=None)` | |
 | `AVERAGEIF` | `AVERAGEIF(range, criteria, average_range=None)` | |
@@ -96,32 +90,43 @@ mx.VLOOKUP("Dave", "sales.csv", "Salary")   # path works directly too
 | `SUMIFS` | `SUMIFS(sum_range, range1, criteria1, ...)` | AND across all pairs |
 | `VLOOKUP` | `VLOOKUP(lookup_value, table, col_index, range_lookup=False, if_not_found=None)` | `col_index`: 1-based number or column name; `lookup_value` can be scalar or a whole column |
 | `XLOOKUP` | `XLOOKUP(lookup_value, lookup_array, return_array, if_not_found=None)` | Same scalar-or-column behavior |
+| `LOOKUPIFS` | `LOOKUPIFS(return_array, range1, criteria1, ...)` | AND across all pairs |
 
 `table` (for VLOOKUP) accepts: pandas DataFrame, polars DataFrame, a
-`magpiexl.Table`, a list of dicts, a list of lists, or a path to a
+`magpyxl.Table`, a list of dicts, a list of lists, or a path to a
 `.csv`/`.xlsx` file.
 
 ## Criteria syntax
 
-Same as Excel: a bare number or string means equality; prefix with
+Same as Spreadsheet: a bare number or string means equality; prefix with
 `>`, `<`, `>=`, `<=`, `<>` for comparisons; use `*` (any run of characters)
 or `?` (exactly one character) for text wildcards. Text matching is
-case-insensitive, same as Excel.
+case-insensitive, same as Spreadsheet.
 
-## Project layout
+## Design philosophy (current phase)
 
-```
-magpiexl/
-├── Cargo.toml              # Rust crate config
-├── pyproject.toml          # maturin build config (mixed python/rust layout)
-├── src/lib.rs               # Rust core: value model, criteria parsing, all 10 functions
-└── python/magpiexl/
-    └── __init__.py          # Python adapter: input normalization, public API, .mx accessor
-```
+The primary goal of magpyxl is correctness and consistency. Every function aims to match Excel's behavior as closely as possible while providing a clean and predictable Python API.
 
-## What's next (later phase, not yet started)
+Performance optimizations are added only after correctness is validated, ensuring speed never comes at the cost of reliability.
 
-Once every function above is tested and confirmed correct in real use:
-- Zero-copy numeric fast paths for array-backed data (numpy/pandas/polars)
-- Benchmarking against pandas on realistic workloads
-- Expanding the criteria/lookup edge cases (multi-column VLOOKUP keys, etc.)
+## What's Next
+
+Our vision is to make magpyxl a practical, everyday toolkit for working with Excel-like operations in Python.
+
+Future releases will introduce many more useful functions that solve common real-world data tasks while keeping the API simple and intuitive. We believe powerful tools shouldn't require complicated code, so simplicity, consistency, and Excel-like familiarity will remain our guiding principles.
+
+Whether you're an experienced Python developer or someone with limited programming experience, our goal is to make magpyxl easy to learn, easy to use, and reliable for day-to-day data analysis and automation.
+
+## Roadmap
+
+- Additional Excel-compatible functions
+- Text and string functions
+- Date and time functions
+- Mathematical and statistical functions
+- Performance improvements
+- SIMD acceleration
+- Broader file format support
+
+## Contributing
+
+Issues and pull requests are welcome.

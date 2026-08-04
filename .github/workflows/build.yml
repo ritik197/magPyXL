@@ -82,20 +82,26 @@ jobs:
   # secret, or PyPI Trusted Publishing configured for this repo (in which
   # case you can delete the `password:` line below).
   publish:
-    name: Publish to PyPI
-    if: startsWith(github.ref, 'refs/tags/v')
-    needs: [linux, windows, macos, sdist]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/download-artifact@v4
-        with:
-          pattern: wheels-*
-          path: dist
-          merge-multiple: true
-      - name: Publish
-        uses: PyO3/maturin-action@v1
-        env:
-          MATURIN_PYPI_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
-        with:
-          command: upload
-          args: --non-interactive --skip-existing dist/*
+  name: Publish to PyPI
+  if: startsWith(github.ref, 'refs/tags/v')
+  needs: [linux, windows, macos, sdist]
+  runs-on: ubuntu-latest
+
+  permissions:
+    id-token: write
+
+  environment:
+    name: pypi
+
+  steps:
+    - uses: actions/download-artifact@v4
+      with:
+        pattern: wheels-*
+        path: dist
+        merge-multiple: true
+
+    - name: Publish to PyPI
+      uses: PyO3/maturin-action@v1
+      with:
+        command: upload
+        args: --non-interactive dist/*
