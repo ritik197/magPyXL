@@ -1,9 +1,10 @@
 # magpyxl
 
-Spreadsheet-style formulas — `SUM`, `AVERAGE`, `COUNT`, `COUNTIF`, `SUMIF`, `AVERAGEIF`,
-`COUNTIFS`, `SUMIFS`, `VLOOKUP`, `XLOOKUP`, `LOOKUPIFS` — backed by a compiled Rust core,
-callable with the exact same syntax whether your data is a plain Python list,
-a pandas DataFrame, a polars DataFrame, or a `.csv`/`.xlsx` file on disk.
+Spreadsheet-style formulas — `SUM`, `AVERAGE`, `COUNT`, `MIN`, `MAX`, `COUNTIF`,
+`SUMIF`, `AVERAGEIF`, `COUNTIFS`, `SUMIFS`, `AVERAGEIFS`, `MINIFS`, `MAXIFS`,
+`VLOOKUP`, `XLOOKUP`, `LOOKUPIFS`, `INFO`, `CLEAN` — backed by a compiled Rust
+core, callable with the exact same syntax whether your data is a plain Python
+list, a pandas DataFrame, a polars DataFrame, or a `.csv`/`.xlsx` file on disk.
 
 
 ## Install
@@ -23,6 +24,7 @@ magpyxl brings familiar Excel/Spreadsheet functions to Python with a consistent 
 - ⚡ Native Polars support
 - 📄 CSV and Excel file support
 - 🔄 Consistent API across data sources
+- 🔡 Case-insensitive formula names (`mx.SUM`, `mx.sum`, `mx.Sum` — all the same)
 - 🐍 Python 3.8+
 
 ## Quick start
@@ -35,9 +37,14 @@ region = ["East", "West", "East", "South", "East"]
 
 mx.SUM(sales)                              # 4750
 mx.AVERAGE(sales)                          # 950.0
+mx.MIN(sales)                              # 300
+mx.MAX(sales)                              # 1500
 mx.COUNTIF(region, "East")                 # 3
 mx.SUMIF(region, "East", sales)            # 3650
+mx.AVERAGEIF(region, "East", sales)        # 1216.67
 mx.SUMIFS(sales, region, "East", sales, ">900")   # AND across pairs
+mx.MINIFS(sales, region, "East")           # smallest East sale
+mx.MAXIFS(sales, region, "East")           # largest East sale
 mx.VLOOKUP("Bob", [("Alice", 50000), ("Bob", 60000)], 2)   # 60000
 mx.XLOOKUP("Carol", ["Alice", "Bob", "Carol"], [50000, 60000, 70000])  # 70000
 ```
@@ -83,18 +90,45 @@ mx.VLOOKUP("Dave", "sales.csv", "Salary")   # path works directly too
 | `SUM` | `SUM(range)` | Ignores text/blank cells |
 | `AVERAGE` | `AVERAGE(range)` | Same |
 | `COUNT` | `COUNT(range)` | Counts numeric cells only (Spreadsheet semantics) |
+| `MIN` | `MIN(range)` | Ignores text/blank cells |
+| `MAX` | `MAX(range)` | Same |
 | `COUNTIF` | `COUNTIF(range, criteria)` | Criteria: `10`, `">10"`, `"<=5"`, `"<>0"`, `"ab*"`, `"a?c"` |
 | `SUMIF` | `SUMIF(range, criteria, sum_range=None)` | |
 | `AVERAGEIF` | `AVERAGEIF(range, criteria, average_range=None)` | |
 | `COUNTIFS` | `COUNTIFS(range1, criteria1, range2, criteria2, ...)` | AND across all pairs |
 | `SUMIFS` | `SUMIFS(sum_range, range1, criteria1, ...)` | AND across all pairs |
+| `AVERAGEIFS` | `AVERAGEIFS(average_range, range1, criteria1, ...)` | AND across all pairs; raises on no match, matching Excel's `#DIV/0!` |
+| `MINIFS` | `MINIFS(min_range, range1, criteria1, ...)` | AND across all pairs; returns `0` on no match, matching Excel |
+| `MAXIFS` | `MAXIFS(max_range, range1, criteria1, ...)` | AND across all pairs; returns `0` on no match, matching Excel |
 | `VLOOKUP` | `VLOOKUP(lookup_value, table, col_index, range_lookup=False, if_not_found=None)` | `col_index`: 1-based number or column name; `lookup_value` can be scalar or a whole column |
 | `XLOOKUP` | `XLOOKUP(lookup_value, lookup_array, return_array, if_not_found=None)` | Same scalar-or-column behavior |
 | `LOOKUPIFS` | `LOOKUPIFS(return_array, range1, criteria1, ...)` | AND across all pairs |
+| `INFO` | `INFO(table)` | Column-by-column profiling — see below |
+| `CLEAN` | `CLEAN(table, plan=None, mode="plan")` | Data-cleaning actions built on top of `INFO` — see below |
 
 `table` (for VLOOKUP) accepts: pandas DataFrame, polars DataFrame, a
 `magpyxl.Table`, a list of dicts, a list of lists, or a path to a
 `.csv`/`.xlsx` file.
+
+## `INFO` and `CLEAN` — just getting started
+
+These two are the newest additions and, honestly, still early. `INFO`
+profiles a table column-by-column (type, missing/unique counts, numeric
+stats, top categories, quality flags like constant columns or possible
+near-duplicate categories). `CLEAN` turns those findings into concrete,
+explicit cleaning actions — it never silently drops a column or auto-converts
+a dtype (like text zip codes with leading zeros) on its own.
+
+```python
+mx.INFO(df)
+# -> per-column report: type, missing %, unique count, quality flags
+
+plan = mx.CLEAN(df, mode="plan")   # see what CLEAN would do, without doing it
+mx.CLEAN(df, plan=plan)            # apply a plan you've reviewed
+```
+
+This is just the starting point — more diagnostics, more cleaning actions,
+and more polish are planned as this grows.
 
 ## Criteria syntax
 
@@ -119,10 +153,11 @@ Whether you're an experienced Python developer or someone with limited programmi
 
 ## Roadmap
 
-- Additional Excel-compatible functions
+- `MATCH`, `INDEX`, `XMATCH`
 - Text and string functions
 - Date and time functions
 - Mathematical and statistical functions
+- Deeper `INFO`/`CLEAN` capabilities
 - Performance improvements
 - SIMD acceleration
 - Broader file format support

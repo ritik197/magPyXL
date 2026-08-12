@@ -1,6 +1,6 @@
 [package]
 name = "magpyxl"
-version = "0.2.0"
+version = "0.2.2"
 edition = "2021"
 
 [lib]
@@ -10,6 +10,8 @@ crate-type = ["cdylib"]
 [dependencies]
 pyo3 = { version = "0.22", features = ["extension-module", "abi3-py38"] }
 numpy = "0.22"
+arrow = { version = "53", default-features = false, features = ["ffi"] }
+rayon = "1"
 
 [profile.release]
 lto = true

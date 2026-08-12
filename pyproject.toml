@@ -4,8 +4,8 @@ build-backend = "maturin"
 
 [project]
 name = "magpyxl"
-version = "0.2.1"
-description = "Excel-style formulas (VLOOKUP, XLOOKUP, SUMIFS, COUNTIFS...) powered by Rust."
+version = "0.2.2"
+description = "Rust-powered Spreadsheet/Excel-formula engine for Python working natively across pandas, polars, and CSV/XLSX."
 readme = "README.md"
 requires-python = ">=3.8"
 license = { text = "MIT" }
@@ -22,7 +22,10 @@ keywords = [
     "polars",
     "xlookup",
     "vlookup",
-    "sumifs"
+    "sumifs",
+    "info",
+    "clean",
+    "ohters"
 ]
 
 classifiers = [
